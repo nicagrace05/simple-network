@@ -4,16 +4,17 @@ import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 np.random.seed(0)
 
+(xtrain, ytrain), (xtest, ytest) = mnist.load_data()
+xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  # normalizing pixel values
+
 #structure 
 list_neurons = [784,784,784,10] 
 batch_len = 10
 learning_rate = .015
-n_output_neurons = list_neurons[-1]
+n_output_neurons = 10
+
 xbatch = xtrain[0:batch_len]
 ybatch = ytrain[0:batch_len]
-
-(xtrain, ytrain), (xtest, ytest) = mnist.load_data()
-xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  # normalizing pixel values
 
 class Neurons:
     def __init__(self, xtrain, ytrain, list_neurons, n_output_neurons):
@@ -22,7 +23,7 @@ class Neurons:
         self.onehot = np.array(ytrain)
         self.list_neurons = list_neurons
         self.n_output_neurons = n_output_neurons  
-        self.batchlen = batch_len
+        self.batchlen = batch_len #batch_len is varible for inside the class 
               
     def initialize_wnb(self):
         self.weights = []  # storing all the weights for the network
@@ -82,7 +83,7 @@ class Neurons:
     def predict(self, x):
     # x: (n_samples, n_inputs)
     a = x.T
-    for i in range(len(self.list_neurons) - 1):
+    for i in range(len(self.list_neurons) - 1): #through each layer 
         z = self.weights[i] @ a + self.biases[i]
         a = np.maximum(0, z)
     z = self.weights[-1] @ a + self.biases[-1]
@@ -97,4 +98,3 @@ loss = network.backpropagation(xbatch, ybatch, learning_rate)
 print(f'Loss after backpropagation: {loss}') 
 
 #Outside data 
-
