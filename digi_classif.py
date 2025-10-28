@@ -9,9 +9,8 @@ xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  # normalizing pixel values
 
 #structure 
 list_neurons = [784,784,784,10] 
-batch_len = 10
+batch_len = 50
 learning_rate = .015
-n_output_neurons = 10
 
 xbatch = xtrain[0:batch_len]
 ybatch = ytrain[0:batch_len]
@@ -33,12 +32,12 @@ class Neurons:
             weights_layer = np.random.randn(n_neurons, prev_layer_size) * 0.01
             bias_layer = np.zeros((n_neurons, 1)) + 0.01
             self.weights.append(weights_layer)
-            self.biases.append(bias_layer)
+            self.biases.append(bias_layer) 
             prev_layer_size = n_neurons
         print(f'Initialized {len(self.weights)} weight matrices.')
 
     def foreward_hidden(self, xbatch):
-        self.activations = [xbatch.T]  # storing for each layer 
+        self.activations = [xbatch.T]  # storing for each layer, input vectors turn into rows of matrix sucsessivley itterated through layers 
         current_activation = xbatch.T
         for i in range(len(self.list_neurons) - 1):  
             z = self.weights[i] @ current_activation + self.biases[i]
@@ -81,20 +80,32 @@ class Neurons:
         return loss 
 
     def predict(self, x):
-    # x: (n_samples, n_inputs)
-    a = x.T
-    for i in range(len(self.list_neurons) - 1): #through each layer 
-        z = self.weights[i] @ a + self.biases[i]
-        a = np.maximum(0, z)
-    z = self.weights[-1] @ a + self.biases[-1]
-    out = 1 / (1 + np.exp(-z))
-    # return label
-    preds = np.argmax(out, axis=0)
-    return preds
+        # x: (n_samples, n_inputs)
+        a = x.T
+        for i in range(len(self.list_neurons) - 1): #through each layer 
+            z = self.weights[i] @ a + self.biases[i]
+            a = np.maximum(0, z)
+        z = self.weights[-1] @ a + self.biases[-1]
+        out = 1 / (1 + np.exp(-z))
+        # return label
+        preds = np.argmax(out, axis=0)
+        return preds
 
-network = Neurons(xtrain, ytrain, list_neurons, n_output_neurons)
+batches_train = 50 
+network =  Neurons(xtrain, ytrain, list_neurons, 10) #creates item 
 network.initialize_wnb()
-loss = network.backpropagation(xbatch, ybatch, learning_rate)
-print(f'Loss after backpropagation: {loss}') 
+loss_iterating = []
 
-#Outside data 
+for b in range(batches_train) : 
+    xbatch = xtrain[(b*batch_len):(b*batch_len + batch_len)] 
+    ybatch = ytrain[(b*batch_len):(b*batch_len + batch_len)] 
+    hid_out = network.foreward_hidden(xbatch)
+    output = network.foreward_output(hid_out)
+    loss_iterating.append(backpropagation(xbatch, ybatch, learning_rate)) 
+print(f'loss iderating through {batches_train} batches of mnist data: {loss_iterating}')
+
+#Outside data
+for filename in os.listdir(digits_outside_raw) :
+    Image.open() #do i need to resize to 28 x 28?
+    #np.array()
+
