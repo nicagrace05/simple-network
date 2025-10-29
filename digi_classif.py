@@ -2,18 +2,19 @@ import numpy as np
 import math
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
+import os #for interacting with computers file system 
+from PIL import Image #python imagaging library 
 np.random.seed(0)
 
-(xtrain, ytrain), (xtest, ytest) = mnist.load_data()
-xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  # normalizing pixel values
+(xtrain, ytrain), (xtest, ytest) = mnist.load_data() #training data already arranged (vector, laybel)
+xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  #normalizing pixel values
 
 #structure 
-list_neurons = [784,784,784,10] 
+epochs = 5 
+list_neurons = [784,784,784,10] #maybe we can plot through as it iterates through the layers?
 batch_len = 50
 learning_rate = .015
-
-xbatch = xtrain[0:batch_len]
-ybatch = ytrain[0:batch_len]
+batches_train = len(xtrain) // batch_len
 
 class Neurons:
     def __init__(self, xtrain, ytrain, list_neurons, n_output_neurons):
@@ -25,7 +26,7 @@ class Neurons:
         self.batchlen = batch_len #batch_len is varible for inside the class 
               
     def initialize_wnb(self):
-        self.weights = []  # storing all the weights for the network
+        self.weights = []  #storing all the weights for the network
         self.biases = []
         prev_layer_size = self.n_inputs
         for n_neurons in self.list_neurons:
@@ -34,14 +35,14 @@ class Neurons:
             self.weights.append(weights_layer)
             self.biases.append(bias_layer) 
             prev_layer_size = n_neurons
-        print(f'Initialized {len(self.weights)} weight matrices.')
+        print(f'Initialized weights matrices of size {self.weights[0].shape} for each hidden layer, {self.weights[-1].shape} for the output layer.')
 
     def foreward_hidden(self, xbatch):
-        self.activations = [xbatch.T]  # storing for each layer, input vectors turn into rows of matrix sucsessivley itterated through layers 
+        self.activations = [xbatch.T]  #storing for each layer, input vectors turn into rows of matrix sucsessivley itterated through layers 
         current_activation = xbatch.T
         for i in range(len(self.list_neurons) - 1):  
             z = self.weights[i] @ current_activation + self.biases[i]
-            current_activation = np.maximum(0, z)  # ReLU activation
+            current_activation = np.maximum(0, z)  #ReLU activation
             self.activations.append(current_activation)
         return current_activation
         
@@ -49,7 +50,7 @@ class Neurons:
         output_weights = self.weights[-1]
         output_bias = self.biases[-1]
         z_output = output_weights @ hidden_activation + output_bias
-        output_activation = 1 / (1 + np.exp(-z_output))  # sigmoid activation 
+        output_activation = 1 / (1 + np.exp(-z_output))  #sigmoid activation 
         self.activations.append(output_activation)
         return output_activation
 
@@ -79,9 +80,8 @@ class Neurons:
         loss = np.sum(output_error ** 2) / self.batchlen  # means squared error loss 
         return loss 
 
-    def predict(self, x):
-        # x: (n_samples, n_inputs)
-        a = x.T
+    def predict(self, X): #X in array  
+        a = X.T
         for i in range(len(self.list_neurons) - 1): #through each layer 
             z = self.weights[i] @ a + self.biases[i]
             a = np.maximum(0, z)
@@ -91,21 +91,36 @@ class Neurons:
         preds = np.argmax(out, axis=0)
         return preds
 
-batches_train = 50 
+#training 
+
 network =  Neurons(xtrain, ytrain, list_neurons, 10) #creates item 
 network.initialize_wnb()
 loss_iterating = []
 
-for b in range(batches_train) : 
-    xbatch = xtrain[(b*batch_len):(b*batch_len + batch_len)] 
-    ybatch = ytrain[(b*batch_len):(b*batch_len + batch_len)] 
-    hid_out = network.foreward_hidden(xbatch)
-    output = network.foreward_output(hid_out)
-    loss_iterating.append(backpropagation(xbatch, ybatch, learning_rate)) 
-print(f'loss iderating through {batches_train} batches of mnist data: {loss_iterating}')
+for epoch in range(epochs) : #using epochs lets the machine see the training data more than once!
+    for b in range(batches_train) :
+        xbatch = xtrain[(b*batch_len):(b*batch_len + batch_len)] 
+        ybatch = ytrain[(b*batch_len):(b*batch_len + batch_len)] 
+        hid_out = network.foreward_hidden(xbatch)
+        output = network.foreward_output(hid_out)
+    loss_iterating.append(round(network.backpropagation(xbatch, ybatch, learning_rate),2))
+print(f'multiplying through {batches_train} batches with 5 epcochs')
+print(f'loss iderating through epochs: {loss_iterating}')
 
-#Outside data
-for filename in os.listdir(digits_outside_raw) :
-    Image.open() #do i need to resize to 28 x 28?
-    #np.array()
+#outside data
+(outside_x, outside_y) = []
+for filename in os.listdir('digits_outside_raw/') :
+    if filename.endswith('.png') :
+        y_file = int(filename.split('_')[0])
+        full_path = os.path.join('digits_outside_raw/',filename)
+        img = Image.open(full_path)
+        x_file = (np.array(img) / 255.0).reshape(784)
+        outside_data1.append([x_file, y_file])
+
+print(np.array(outside_data1).shape)
+guesses = predict(outside_x)
+for i in outside_y : 
+    print(f'number: {outside_y}, guess: {guesses[i]}')
+print('guesses on drawings:')
+
 
