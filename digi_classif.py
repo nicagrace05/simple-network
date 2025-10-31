@@ -108,19 +108,21 @@ print(f'multiplying through {batches_train} batches with 5 epcochs')
 print(f'loss iderating through epochs: {loss_iterating}')
 
 #outside data
-(outside_x, outside_y) = []
+outside_x = []
+outside_y = []
 for filename in os.listdir('digits_outside_raw/') :
     if filename.endswith('.png') :
         y_file = int(filename.split('_')[0])
         full_path = os.path.join('digits_outside_raw/',filename)
         img = Image.open(full_path)
         x_file = (np.array(img) / 255.0).reshape(784)
-        outside_data1.append([x_file, y_file])
+        outside_x.append(x_file)
+        outside_y.append(y_file)
 
-print(np.array(outside_data1).shape)
+print(np.array(outside_x).shape)
 guesses = predict(outside_x)
 for i in outside_y : 
     print(f'number: {outside_y}, guess: {guesses[i]}')
-print('guesses on drawings:')
+
 
 
