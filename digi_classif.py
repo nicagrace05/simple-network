@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 import os #for interacting with computers file system 
 from PIL import Image #python imagaging library 
+import pickle 
 np.random.seed(0)
 
 (xtrain, ytrain), (xtest, ytest) = mnist.load_data() #training data already arranged (vector, laybel)
@@ -16,6 +17,7 @@ batch_len = 50
 learning_rate = .015
 batches_train = len(xtrain) // batch_len
 
+#THE MACHINE!!! coded line by line by me :)
 class Neurons:
     def __init__(self, xtrain, ytrain, list_neurons, n_output_neurons):
         self.n_inputs = xtrain.shape[1]
@@ -55,8 +57,7 @@ class Neurons:
         return output_activation
 
     def backpropagation(self, xbatch, ybatch, learning_rate):
-        hidden_final = self.foreward_hidden(xbatch)
-        output_activation = self.foreward_output(hidden_final)
+        output_activation = self.activations[-1]
         y_onehot = np.eye(10)[ybatch].T  # shape (10, batch_len)
         output_error = output_activation - y_onehot  # output gradient
         grad_weights_out = (output_error @ self.activations[-2].T) / self.batchlen  # finding the average gradient over the whole batch 
@@ -92,7 +93,6 @@ class Neurons:
         return preds
 
 #training 
-
 network =  Neurons(xtrain, ytrain, list_neurons, 10) #creates item 
 network.initialize_wnb()
 loss_iterating = []
@@ -103,9 +103,23 @@ for epoch in range(epochs) : #using epochs lets the machine see the training dat
         ybatch = ytrain[(b*batch_len):(b*batch_len + batch_len)] 
         hid_out = network.foreward_hidden(xbatch)
         output = network.foreward_output(hid_out)
-    loss_iterating.append(round(network.backpropagation(xbatch, ybatch, learning_rate),2))
+        loss_iterating.append(round(network.backpropagation(xbatch, ybatch, learning_rate),2))
+with open('weights_halloween.pkl', 'wb') as f: #numpy being stubborn  :(
+    pickle.dump(network.weights, f)
+with open('biases_halloween.pkl', 'wb') as f:
+    pickle.dump(network.biases, f)
+print('wnb saved as .pkl files!!')
+
 print(f'multiplying through {batches_train} batches with 5 epcochs')
-print(f'loss iderating through epochs: {loss_iterating}')
+print(f'loss after that: {loss_iterating[-1]}')
+
+#testing 
+test_predicts = network.predict(xtest[:100])
+total = 0
+for i, value in enumerate(test_predicts) :
+    if value == ytest[i] :
+        total += 1 
+print(f'{total/100} percent right on some test data!')
 
 #outside data
 outside_x = []
@@ -114,15 +128,14 @@ for filename in os.listdir('digits_outside_raw/') :
     if filename.endswith('.png') :
         y_file = int(filename.split('_')[0])
         full_path = os.path.join('digits_outside_raw/',filename)
-        img = Image.open(full_path)
-        x_file = (np.array(img) / 255.0).reshape(784)
+        img = Image.open(full_path).convert('L') #must convert to greyscale so shape is 28,28, no third dimension
+        img = img.resize((28,28)) #in case too big 
+        img_array = 1 - np.array(img) #inverting the pixels cause the mnnist data is white on black 
+        x_file = (img_array / 255.0).reshape(784)
         outside_x.append(x_file)
         outside_y.append(y_file)
 
-print(np.array(outside_x).shape)
-guesses = predict(outside_x)
-for i in outside_y : 
-    print(f'number: {outside_y}, guess: {guesses[i]}')
-
-
-
+print(np.array(outside_x.T).shape)
+guesses = network.predict(np.array(outside_x))
+for i, value in enumerate(outside_y) : 
+    print(f'number: {value}, guess: {guesses[i]}')
