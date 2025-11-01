@@ -37,7 +37,7 @@ class Neurons:
             self.weights.append(weights_layer)
             self.biases.append(bias_layer) 
             prev_layer_size = n_neurons
-        print(f'Initialized weights matrices of size {self.weights[0].shape} for each hidden layer, {self.weights[-1].shape} for the output layer.')
+        print(f'Initialized 3 weights matrices of size {self.weights[0].shape} and one {self.weights[-1].shape} size layer.')
 
     def foreward_hidden(self, xbatch):
         self.activations = [xbatch.T]  #storing for each layer, input vectors turn into rows of matrix sucsessivley itterated through layers 
@@ -135,7 +135,8 @@ for filename in os.listdir('digits_outside_raw/') :
         outside_x.append(x_file)
         outside_y.append(y_file)
 
-print(np.array(outside_x.T).shape)
-guesses = network.predict(np.array(outside_x))
+outside_x = np.array(outside_x)
+print(np.array(outside_x).shape)
+guesses = network.predict(outside_x)
 for i, value in enumerate(outside_y) : 
     print(f'number: {value}, guess: {guesses[i]}')
