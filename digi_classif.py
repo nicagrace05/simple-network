@@ -5,10 +5,12 @@ from tensorflow.keras.datasets import mnist
 import os #for interacting with computers file system 
 from PIL import Image #python imagaging library 
 import pickle 
+import matplotlib.pyplot as plt 
 np.random.seed(0)
 
 (xtrain, ytrain), (xtest, ytest) = mnist.load_data() #training data already arranged (vector, laybel)
 xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  #normalizing pixel values
+xtest = (xtest/255).reshape(xtest.shape[0], -1)  
 
 #structure 
 epochs = 5 
@@ -119,7 +121,7 @@ total = 0
 for i, value in enumerate(test_predicts) :
     if value == ytest[i] :
         total += 1 
-print(f'{total/100} percent right on some test data!')
+print(f'{total} percent right on some test data!')
 
 #outside data
 outside_x = []
@@ -135,8 +137,17 @@ for filename in os.listdir('digits_outside_raw/') :
         outside_x.append(x_file)
         outside_y.append(y_file)
 
+tot = 0
 outside_x = np.array(outside_x)
 print(np.array(outside_x).shape)
 guesses = network.predict(outside_x)
 for i, value in enumerate(outside_y) : 
-    print(f'number: {value}, guess: {guesses[i]}')
+    if guesses[i] == outside_y[i]: 
+        tot += 1 
+    else:
+        print(f' ruh roh! number: {value}, guess: {guesses[i]}')
+        out_x_img = outside_x[i].reshape(28, 28)
+        plt.imshow(out_x_img, cmap = 'gray')
+        plt.show()
+right = (tot/15)*100
+print(f'{right:.2f} percent correct on your hard handwritten test!')
