@@ -1,4 +1,5 @@
 import numpy as np 
+import math
 import os 
 from PIL import Image 
 import pickle
@@ -9,6 +10,8 @@ with open('weights_halloween.pkl', 'rb') as f:
 with open('biases_halloween.pkl', 'rb') as f:
       biases = pickle.load(f)
 print(len(weights))
+
+list_neurons = [784,324,100,10] 
 
 class Lets_open_er_up :
     def __init__(self, X, weights, biases, file_name) :
@@ -33,7 +36,8 @@ class Lets_open_er_up :
     def layer2(self, lay2_imp) :
         lay2 = self.weights[1] @ lay2_imp + self.biases[1]
         lay2_out = np.maximum(0, lay2)
-        lay2_img = lay2_out.reshape(28,28)
+        pixels2 = int(math.sqrt(list_neurons[1]))
+        lay2_img = lay2_out.reshape(pixels2, pixels2)
         plt.imshow(lay2_img, cmap = 'gray')
         plt.title(f'second layer activations: {self.name}')
         plt.show()
@@ -42,17 +46,19 @@ class Lets_open_er_up :
     def layer3(self, lay3_imp) :
         lay3 = self.weights[2] @ lay3_imp + self.biases[2]
         lay3_out = np.maximum(0, lay3)
-        lay3_img = lay3_out.reshape(28,28)
+        pixels3 = int(math.sqrt(list_neurons[2]))
+        lay3_img = lay3_out.reshape(pixels3, pixels3)
         plt.imshow(lay3_img, cmap = 'gray')
         plt.title(f'third layer activations: {self.name}')
         plt.show()
         return lay3_out
 
     def output_lay(self, out_lay_imp) :
-       output = self.weights[-1] @ out_lay_imp + self.biases[-1]
-       output_activation = 1 / (1 + np.exp(-output))
-       print(f'networks guess {np.argmax(output_activation)}')
-       return output_activation
+        output = self.weights[-1] @ out_lay_imp + self.biases[-1]
+        exp_scores = np.exp(output - np.max(output, axis = 0, keepdims = True)) #softmax activation
+        output_activation = exp_scores / np.sum(exp_scores, axis = 0 , keepdims = True)
+        print(f'networks guess {np.argmax(output_activation)}')
+        return output_activation
       
 outside_x = []
 outside_y = []
