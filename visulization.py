@@ -4,14 +4,18 @@ import os
 from PIL import Image 
 import pickle
 import matplotlib.pyplot as plt 
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
 
-with open('weights_halloween.pkl', 'rb') as f:
+(xmnist, ymnist),(_,__) = mnist.load_data()
+
+
+with open('weights.pkl', 'rb') as f:
      weights = pickle.load(f)
-with open('biases_halloween.pkl', 'rb') as f:
+with open('biases.pkl', 'rb') as f:
       biases = pickle.load(f)
-print(len(weights))
 
-list_neurons = [784,324,100,10] 
+list_neurons = [784,625,324,10] 
 
 class Lets_open_er_up :
     def __init__(self, X, weights, biases, file_name) :
@@ -55,6 +59,8 @@ class Lets_open_er_up :
 
     def output_lay(self, out_lay_imp) :
         output = self.weights[-1] @ out_lay_imp + self.biases[-1]
+        plt.imshow(output, cmap = 'gray')
+        plt.show()
         exp_scores = np.exp(output - np.max(output, axis = 0, keepdims = True)) #softmax activation
         output_activation = exp_scores / np.sum(exp_scores, axis = 0 , keepdims = True)
         print(f'networks guess {np.argmax(output_activation)}')
@@ -76,9 +82,38 @@ for filename in os.listdir('indipendent_digits/') :
         outside_x.append(x_file)
         outside_y.append(y_file)
 
-for numb, imp in enumerate(outside_x) :
-    testin = Lets_open_er_up(outside_x[numb], weights, biases, file_names[numb])
-    lay2imp = testin.layer1()
-    lay3imp = testin.layer2(lay2imp)
-    output_layimp = testin.layer3(lay3imp)
-    testin.output_lay(output_layimp)
+# for numb, imp in enumerate(outside_x) :
+#     testin = Lets_open_er_up(outside_x[numb], weights, biases, file_names[numb])
+#     lay2imp = testin.layer1()
+#     lay3imp = testin.layer2(lay2imp)
+#     output_layimp = testin.layer3(lay3imp)
+#     testin.output_lay(output_layimp)
+
+# for i, weight in enumerate(weights[:-1]) :
+#     print(weight.shape)
+#     pixel = int(math.sqrt(len(weight)))
+#     weight_row = weight[0].reshape(pixel, pixel)
+#     plt.imshow(weight_row, cmap = 'gray')
+#     plt.title(f'weight visualization layer {i}')
+#     plt.show()
+
+total = 0 
+for i, imp in enumerate(xmnist[0:15]) :
+     testin = Lets_open_er_up(imp, weights, biases, ymnist[i])
+     lay2imp = testin.layer1()
+     lay3imp = testin.layer2(lay2imp)
+     output_layimp = testin.layer3(lay3imp)
+     guess = testin.output_lay(output_layimp)
+     if np.argmax(guess, axis=0) == ymnist[i] :
+         total += 1 
+print(f'percent on mnist data: {(total/15)*100}')
+
+#seperating some data  
+x_sep_ints = []
+for intiger in range (0,9) :
+    x_sep = []
+    y_sep = []
+    for times in range (0,9) :
+        y_sep = ymnist.index(intiger)
+        x_sep = [xmnist[ind] for ind in y_sep]
+        x_sep_ints.append(x_sep)

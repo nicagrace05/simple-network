@@ -11,17 +11,17 @@ np.random.seed(0)
 (xtrain, ytrain), (xtest, ytest) = mnist.load_data() #training data already arranged (vector, laybel)
 xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  #normalizing pixel values
 xtest = (xtest/255).reshape(xtest.shape[0], -1)  
-all_images = np.concatenate([xtrain, xtest], axis = 0 ) #training on all the data cuz im making my own test stuff 
-all_labels = np.concatenate([ytrain, ytest], axis = 0 )
+all_images = np.concatenate([xtrain[15:], xtest], axis = 0 ) #training on all the data cuz im making my own test stuff 
+all_labels = np.concatenate([ytrain[15:], ytest], axis = 0 )
 
 #structure 
-epochs = 6 
-list_neurons = [784,324,100,10] #maybe we can plot through as it iterates through the layers?
-batch_len = 50
-learning_rate = .005
+epochs = 4 
+list_neurons = [784,625,324,10] #sqare numbs to plot 
+batch_len = 70
+learning_rate = .075
 batches_train = len(all_images) // batch_len
 
-#THE MACHINE!!! coded line by line by me :)
+#THE MACHINE!
 class Neurons:
     def __init__(self, xtrain, ytrain, list_neurons, n_output_neurons):
         self.n_inputs = xtrain.shape[1]
@@ -96,6 +96,18 @@ class Neurons:
         out = exp_scores / np.sum(exp_scores, axis = 0, keepdims = True)
         preds = np.argmax(out, axis=0) # returns the label
         return preds
+    
+    def recenter_dig(arrays) :
+        rows = np.any(arrays > 0, axis=1)
+        cols = np.any(arrays > 0, axis=0)
+        ymin, ymax = np.where(rows)[0][[0, -1]]
+        xmin, xmax = np.where(cols)[0][[0, -1]]
+        cropped = arrays[ymin:ymax+1, xmin:xmax+1]
+        cropped_img = Image.fromarray(cropped)
+        resized = cropped_img.resize((20,20), Image.LANCZOS)
+        canvas = np.zeros((28,28))
+        canvas[4:24, 4:24] = np.array(resized)
+        return canvas
 
 #training 
 network =  Neurons(all_images, all_labels, list_neurons, 10) #creates item 
@@ -111,9 +123,9 @@ for epoch in range(epochs) : #using epochs lets the machine see the training dat
         loss_iterating.append(round(network.backpropagation(xbatch, ybatch, learning_rate),2))
     print(f'loss after epoch {epoch}: {loss_iterating[-1]}')
 
-with open('weights_halloween.pkl', 'wb') as f: #numpy being stubborn  :(
+with open('weights.pkl', 'wb') as f: #numpy being stubborn  :(
     pickle.dump(network.weights, f)
-with open('biases_halloween.pkl', 'wb') as f:
+with open('biases.pkl', 'wb') as f:
     pickle.dump(network.biases, f)
 print('wnb saved as .pkl files!!')
 
@@ -127,6 +139,7 @@ for filename in os.listdir('digits_outside_raw/') :
         img = Image.open(full_path).convert('L') #must convert to greyscale so shape is 28,28, no third dimension
         img = img.resize((28,28)) #in case too big 
         img_array = 1 - np.array(img) #inverting the pixels cause the mnnist data is white on black 
+        img_array = Neurons.recenter_dig(img_array)
         x_file = (img_array / 255.0).reshape(784)
         outside_x.append(x_file)
         outside_y.append(y_file)
