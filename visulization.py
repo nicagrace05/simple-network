@@ -97,23 +97,35 @@ for filename in os.listdir('indipendent_digits/') :
 #     plt.title(f'weight visualization layer {i}')
 #     plt.show()
 
-total = 0 
-for i, imp in enumerate(xmnist[0:15]) :
-     testin = Lets_open_er_up(imp, weights, biases, ymnist[i])
-     lay2imp = testin.layer1()
-     lay3imp = testin.layer2(lay2imp)
-     output_layimp = testin.layer3(lay3imp)
-     guess = testin.output_lay(output_layimp)
-     if np.argmax(guess, axis=0) == ymnist[i] :
-         total += 1 
-print(f'percent on mnist data: {(total/15)*100}')
+# total = 0 
+# for i, imp in enumerate(xmnist[0:15]) :
+#      testin = Lets_open_er_up(imp, weights, biases, ymnist[i])
+#      lay2imp = testin.layer1()
+#      lay3imp = testin.layer2(lay2imp)
+#      output_layimp = testin.layer3(lay3imp)
+#      guess = testin.output_lay(output_layimp)
+#      if np.argmax(guess, axis=0) == ymnist[i] :
+#          total += 1 
+# print(f'percent on mnist data: {(total/15)*100}')
 
 #seperating some data  
-x_sep_ints = []
-for intiger in range (0,9) :
-    x_sep = []
-    y_sep = []
-    for times in range (0,9) :
-        y_sep = ymnist.index(intiger)
-        x_sep = [xmnist[ind] for ind in y_sep]
-        x_sep_ints.append(x_sep)
+x_sep = []
+y_sep = [0,1,2,3,4,5,6,7,8,9]
+for intiger in y_sep:
+    indexes = np.where(ymnist == intiger)[0] 
+    indexes = indexes[0:10] #because ^ returns tuple
+    for ind in indexes :
+        event = xmnist[ind]
+        x_sep.append(event)
+    
+
+for digit_ in range(0,10) : #inclusive at beggining not end
+    print(f' starting the {digit_}s!')
+    x_sep = x_sep[digit_*10:(digit_*10)+10]
+    dig_list = [digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,]
+    for idertation in range(0,9) :
+        seperated = Lets_open_er_up(x_sep, weights, biases, dig_list)
+        lay2imp = seperated.layer1()
+        lay3imp = seperated.layer2(lay2imp)
+        output_layimp = seperated.layer3(lay3imp)
+        guess = seperated.output_lay(output_layimp)
