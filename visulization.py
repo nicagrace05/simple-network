@@ -121,10 +121,9 @@ for intiger in y_sep:
 
 for digit_ in range(0,10) : #inclusive at beggining not end
     print(f' starting the {digit_}s!')
-    x_sep = x_sep[digit_*10:(digit_*10)+10]
-    dig_list = [digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,digit_,]
+    x_sep_i = x_sep[digit_*10:(digit_*10)+10]
     for idertation in range(0,9) :
-        seperated = Lets_open_er_up(x_sep, weights, biases, dig_list)
+        seperated = Lets_open_er_up(x_sep_i[idertation], weights, biases, digit_)
         lay2imp = seperated.layer1()
         lay3imp = seperated.layer2(lay2imp)
         output_layimp = seperated.layer3(lay3imp)
