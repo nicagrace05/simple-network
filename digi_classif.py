@@ -13,6 +13,8 @@ xtrain = (xtrain/255).reshape(xtrain.shape[0], -1)  #normalizing pixel values
 xtest = (xtest/255).reshape(xtest.shape[0], -1)  
 all_images = np.concatenate([xtrain[15:], xtest], axis = 0 ) #training on all the data cuz im making my own test stuff 
 all_labels = np.concatenate([ytrain[15:], ytest], axis = 0 )
+testx = xtrain[0:15]
+testy = ytrain[0:15]
 
 #structure 
 epochs = 4 
@@ -129,6 +131,15 @@ with open('biases.pkl', 'wb') as f:
     pickle.dump(network.biases, f)
 print('wnb saved as .pkl files!!')
 
+#testing on what it hasnt seen mnist 
+predictions = network.predict(testx)
+correct = 0
+for i, value in enumerate(testy) :
+    if predictions[i] == testy[i]:
+        correct += 1
+accuracy = (correct/len(testy))*100
+print(f' accuracy on unseen mnist test data: {accuracy:.2f} percent')
+
 #outside data
 outside_x = []
 outside_y = []
@@ -156,6 +167,7 @@ for i, value in enumerate(outside_y) :
         print(f' ruh roh! number: {value}, guess: {guesses[i]}')
         out_x_img = outside_x[i].reshape(28, 28)
         plt.imshow(out_x_img, cmap = 'gray')
+        plt.title(f'guess: {guesses[i]}')
         plt.show()
 right = (tot/15)*100
 print(f'{right:.2f} percent correct on your hard handwritten test!')

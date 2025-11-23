@@ -28,7 +28,7 @@ class Lets_open_er_up :
         img_imp = self.input.reshape(28,28)
         plt.imshow(img_imp, cmap = 'gray')
         plt.title(f'input image: {self.name}')
-        plt.show()
+        #plt.show()
         lay1 = self.weights[0] @ self.input + self.biases[0]
         lay1_out = np.maximum(0, lay1)
         lay1_img = lay1_out.reshape(28,28)
@@ -44,7 +44,7 @@ class Lets_open_er_up :
         lay2_img = lay2_out.reshape(pixels2, pixels2)
         plt.imshow(lay2_img, cmap = 'gray')
         plt.title(f'second layer activations: {self.name}')
-        plt.show()
+        #plt.show()
         return lay2_out
 
     def layer3(self, lay3_imp) :
@@ -54,13 +54,13 @@ class Lets_open_er_up :
         lay3_img = lay3_out.reshape(pixels3, pixels3)
         plt.imshow(lay3_img, cmap = 'gray')
         plt.title(f'third layer activations: {self.name}')
-        plt.show()
+        #plt.show()
         return lay3_out
 
     def output_lay(self, out_lay_imp) :
         output = self.weights[-1] @ out_lay_imp + self.biases[-1]
         plt.imshow(output, cmap = 'gray')
-        plt.show()
+        #plt.show()
         exp_scores = np.exp(output - np.max(output, axis = 0, keepdims = True)) #softmax activation
         output_activation = exp_scores / np.sum(exp_scores, axis = 0 , keepdims = True)
         print(f'networks guess {np.argmax(output_activation)}')
@@ -114,13 +114,17 @@ y_sep = [0,1,2,3,4,5,6,7,8,9]
 for intiger in y_sep:
     indexes = np.where(ymnist == intiger)[0] 
     indexes = indexes[0:10] #because ^ returns tuple
-    for ind in indexes :
+    for ind in indexes:
         event = xmnist[ind]
         x_sep.append(event)
     
 
 for digit_ in range(0,10) : #inclusive at beggining not end
     print(f' starting the {digit_}s!')
+    square = np.zeros((200, 200, 3), dtype=np.uint8)
+    square[:, :, 0] = 255   # Red channel
+    plt.imshow(square)
+    plt.show() #seeing the different digits 
     x_sep_i = x_sep[digit_*10:(digit_*10)+10]
     for idertation in range(0,9) :
         seperated = Lets_open_er_up(x_sep_i[idertation], weights, biases, digit_)
